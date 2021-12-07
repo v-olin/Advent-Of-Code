@@ -3,8 +3,8 @@ import Data.List.Split
 
 {-
     PowerShell Timing:
-        Milliseconds      : 298
-        Ticks             : 2981559
+        Milliseconds      : 28
+        Ticks             : 289279
 -}
 
 -- Get an [Int] input, list all possible midpoints, solve
