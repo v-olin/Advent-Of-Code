@@ -18,10 +18,9 @@ getVals path = do contents <- readFile path
                   return (map (read::String->Int) (splitOn "," contents))
 
 getFuel :: [Int] -> Int -> Int -> Int
-getFuel (x:xs) p m = x' + getFuel xs p m
+getFuel xs p m = foldl (+) 0 (xs' p m)
     where
-        x' = if p == 1 then abs (x-m) else sum [1..(abs (x-m))]
-getFuel [] _ _ = 0
+        xs' p m = map (\x -> if p == 1 then abs (x-m) else sum [1..(abs (x-m))]) xs
 
 solve :: [Int] -> [Int] -> Int -> Int
 solve xs ls p = minimum $ map (getFuel xs p) ls
