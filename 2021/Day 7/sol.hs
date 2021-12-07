@@ -3,8 +3,8 @@ import Data.List.Split
 
 {-
     PowerShell Timing:
-        Milliseconds      : 302
-        Ticks             : 3026044
+        Milliseconds      : 298
+        Ticks             : 2981559
 -}
 
 main :: IO()
