@@ -24,6 +24,16 @@ occurrences = zip ['a'..'g'] [8,6,8,7,4,9,7]
 stdSums :: [(Int, Int)]
 stdSums = zip [0..9] [42,17,34,39,30,37,41,25,49,45]
 
+segments :: [String]
+segments = splitOn " " s
+    where
+        s = "abcefg cf acdeg acdfg bcdf abdfg abdefg acf abcdefg abcdfg"
+
+findOccs :: String -> Char -> [(Char, Int)]
+findOccs s c = zip ['a'..'g'] ns
+    where
+        ns = map (length . (filter (\c' -> c' == c) s)) ['a'..'g']
+
 -- Filter away whitespaces or newlines
 noWhtSpc :: String -> Bool
 noWhtSpc s = if s == "" then False else True
@@ -48,15 +58,15 @@ checkLen ss = length $ intersect ss' p1digits
 part1 :: [Combo] -> Int
 part1 cs = foldl (+) 0 $ map (\(a,b) -> checkLen b) cs
 
-sumFromStr :: String -> Int
-sumFromStr s = sum $ map (\c -> (snd ((fromChar c) !! 0))) s
+sumFromStr :: [(Char, Int)] -> String -> Int
+sumFromStr occs s = sum $ map (\c -> (snd ((fromChar c) !! 0))) s
     where
-        fromChar c = filter (\oc -> if (fst oc) == c then True else False) occurrences
+        fromChar c = filter (\oc -> if (fst oc) == c then True else False) occs
 
-digitFromSum :: Int -> Int
-digitFromSum n = snd (std !! 0)
+digitFromSum :: [(Int, Int)] -> Int -> Int
+digitFromSum sums n = snd (std !! 0)
     where
-        std = filter (\p -> if (snd p) == n then True else False) stdSums
+        std = filter (\p -> if (snd p) == n then True else False) sums
 
 digitsToSum :: [Int] -> Int
 digitsToSum = read . concatMap show
