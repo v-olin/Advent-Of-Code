@@ -6,6 +6,12 @@ import Data.List
 import Data.Matrix
 import Data.List.Split (chunksOf, splitOn)
 
+{-
+    PowerShell Timing:
+        Milliseconds      : 545
+        Ticks             : 5456100
+-}
+
 main :: IO()
 main = do vals <- getVals "input.txt"
           let mtrx = fromLists (map filterWhtSpc vals)
