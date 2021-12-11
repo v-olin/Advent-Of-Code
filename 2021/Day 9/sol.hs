@@ -7,9 +7,10 @@ import Data.Matrix
 import Data.List.Split (chunksOf, splitOn)
 
 main :: IO()
-main = do vals <- getVals "test.txt"
+main = do vals <- getVals "input.txt"
           let mtrx = fromLists (map filterWhtSpc vals)
           print (part1 mtrx)
+          print (part2 mtrx)
 
 getVals :: FilePath -> IO [[String]]
 getVals path = do contents <- readFile path
@@ -18,46 +19,36 @@ getVals path = do contents <- readFile path
 filterWhtSpc :: [String] -> [Int]
 filterWhtSpc = map (read::String->Int) . filter (/= "")
 
-internalsM :: Matrix Int -> [Matrix Int]
-internalsM m = map (\(x,y) -> submatrix x (x+2) y (y+2) m) ps
+offsets :: Matrix Int -> (Int, Int) -> [(Int, Int)]
+offsets m (x,y) = filter (\(a,b) -> not (a < 1 || a > h || b < 1 || b > l)) ps
     where
-        (x,y) = (nrows m, ncols m)
-        ps = concatMap (\x' -> map (x',) [1..(y-2)]) [1..(x-2)]
+        ps = map (\(a,b) -> (a+x,b+y)) [(0,-1),(1,0),(0,1),(-1,0)]
+        (l,h) = (ncols m, nrows m)
 
-bordersM :: Matrix Int -> [Matrix Int]
-bordersM m = map (\(x',y') -> submatrix x' (x'+1) y' (y'+1) m) ps2
+basin :: Matrix Int -> (Int, Int) -> Bool
+basin m (x,y) = getElem x y m /= 9
+
+checkLow :: Matrix Int -> (Int, Int) -> Bool
+checkLow m p = all (\(x,y) -> n < getElem x y m) (offsets m p)
     where
-        (x,y) = (nrows m, ncols m)
-        ps1 = concatMap (\x' -> map (x',) [1..(y-1)]) [1,x-1]
-        ps2 = map (,1) [1..(x-1)]
-        ps = nub (ps1 ++ ps2)
+        n = uncurry getElem p m
 
-bordersRM :: Matrix Int -> [Matrix Int]
-bordersRM m = map ((\(x',y') -> submatrix x' (x'+1) y' (y'+1) m) . (,y-1)) [1..(x-1)]
+findLows :: Matrix Int -> [(Int, Int)]
+findLows m = filter (checkLow m) ps
     where
-        (x,y) = (nrows m, ncols m)
+        (l, h) = (ncols m, nrows m)
+        ps = concatMap (\x' -> map (x',) [1..l]) [1..h]
 
-submtrx :: Matrix Int -> [Matrix Int]
-submtrx m = internalsM m ++ bordersM m
+part1 :: Matrix Int -> Int
+part1 m = sum $ map ((+ 1) . (\(x,y) -> getElem x y m)) (findLows m)
 
-lowpoint :: Matrix Int -> Bool
-lowpoint m
-    | ncols m == 2 = all (getElem 1 1 m <) (drop 1 (toList m))
-    | otherwise = all (getElem 2 2 m <) (take 4 (toList m) ++ drop 5 (toList m))
-
-lowpoint' :: Matrix Int -> Bool
-lowpoint' m = all (getElem 1 2 m <) (take 1 (toList m) ++ drop 2 (toList m))
-
-getLow :: Matrix Int -> Int
-getLow m
-    | ncols m == 2 = getElem 1 1 m
-    | otherwise = getElem 2 2 m
-
-getLow' :: Matrix Int -> Int
-getLow' = getElem 1 2
-
-part1 :: Matrix Int -> [Matrix Int]
-part1 m = ltb ++ rht
+fill :: Matrix Int -> [(Int, Int)] -> [(Int, Int)] -> Int
+fill _ [] vstd = length (nub vstd)
+fill m (p:ps) vstd = fill m ps' (vstd ++ [p])
     where
-        ltb = filter lowpoint (bordersM m)
-        rht = filter lowpoint' (bordersRM m)
+        ps' = filter (basin m) (ps ++ (offsets m p \\ vstd))
+
+part2 :: Matrix Int -> Int
+part2 m = product (take 3 (reverse (sort (map (\p -> fill m [p] []) lows))))
+    where
+        lows = findLows m
