@@ -7,10 +7,17 @@ import Data.Maybe
 import Data.Stack
 import Data.List.Split (chunksOf, splitOn)
 
+{-
+    PowerShell Timing:
+        Milliseconds      : 45
+        Ticks             : 452883
+-}
+
 main :: IO()
-main = do vals <- getVals "test.txt"
+main = do vals <- getVals "input.txt"
           let series = map (filter (/= "")) vals
           print (sum $ part1 series)
+          print (part2 series)
 
 getVals :: FilePath -> IO [[String]]
 getVals path = do contents <- readFile path
@@ -28,20 +35,17 @@ points s = case s of ")" -> 3
                      "]" -> 57
                      "}" -> 1197
                      ">" -> 25137
+                     "(" -> 1
+                     "[" -> 2
+                     "{" -> 3
+                     "<" -> 4
                      _ -> 0
-
-points' :: String -> Int
-points' s = case s of ")" -> 1
-                      "]" -> 2
-                      "}" -> 3
-                      ">" -> 4
-                      _ -> 0
 
 isOpen :: String -> Bool
 isOpen s = s `elem` ["(","[","{","<"]
 
 runLine :: Stack String -> [String] -> (Stack String, String)
-runLine _ [] = (stackNew, "")
+runLine stack [] = (stack, "")
 runLine stack (s:ss)
     | isOpen s = runLine (stackPush stack s) ss
     | stackIsEmpty stack = (stack, s)
@@ -62,12 +66,10 @@ foldScore :: [Int] -> Int
 foldScore = foldl (\x y -> x*5 + y) 0
 
 part1 :: [[String]] -> [Int]
-part1 ss = map (\s -> points (snd (runLine stackNew s))) ss
+part1 = map (points . snd . runLine stackNew)
 
 part2 :: [[String]] -> Int
-part2 ss = scores !! (length scores `div` 2)
+part2 ss = sort scores !! (length scores `div` 2)
     where
-        incomplete = filter (\s -> snd (runLine stackNew s) == "") ss
-        stacks = map (\c -> fst (runLine stackNew c)) incomplete
-        score = (map (popAll) stacks)
-        scores = sort (map foldScore score)
+        stacks = filter (\x -> snd x == "") (map (runLine stackNew) ss)
+        scores = map (foldl (\x y -> x*5 + y) 0 . map points . popAll . fst) stacks
