@@ -62,9 +62,6 @@ popAll stack
     where
         popd = stackPop stack
 
-foldScore :: [Int] -> Int
-foldScore = foldl (\x y -> x*5 + y) 0
-
 part1 :: [[String]] -> [Int]
 part1 = map (points . snd . runLine stackNew)
 
