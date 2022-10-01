@@ -22,7 +22,7 @@ like this:
 ## 2015
 Coming up on AOC of 2022, I'm warming up with some older events.
 Starting with 2015. This year is written in Java and the
-solutions are self-contained. Just run them with
+solutions are self-contained. Just run them like this:
 ```
 > java <file>.java
 ```
