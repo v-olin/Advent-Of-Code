@@ -1,6 +1,12 @@
 # Advent-Of-Code
 
-My repo for all years of [Advent of Code](https://adventofcode.com/) (that I've done so far). Previously in separated repos but now combined.
+Monorepo for all my years of [Advent of Code](https://adventofcode.com/).
+
+## 2022
+New year, new language. This year is written in F#.
+```
+> dotnet fsi <file>.fsx
+```
 
 ## 2021
 This year I've decided to write it in Haskell. Mostly for practice but great fun!
