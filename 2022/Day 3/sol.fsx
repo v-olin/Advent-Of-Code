@@ -23,6 +23,6 @@ input   |> List.map (splitEq)
 
 input   |> List.map (Set.ofSeq)
         |> Seq.chunkBySize 3
-        |> Seq.map (fun x -> Set.intersectMany x)
+        |> Seq.map Set.intersectMany
         |> score
         |> printfn "Part 2: %d"
