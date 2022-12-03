@@ -1,7 +1,7 @@
 let splitEq (s: string) =
-    let a = s.[0..(s.Length/2)-1] |> Set.ofSeq // |> List.map int
-    let b = s.[(s.Length/2)..] |> Set.ofSeq // |> List.map int
-    (a, b)
+    let a = s.[0..(s.Length/2)-1] |> Set.ofSeq
+    let b = s.[(s.Length/2)..] |> Set.ofSeq
+    Seq.ofList [a; b]
 
 let dict =
     (List.zip ['a'..'z'] [1..26]) @ (List.zip ['A'..'Z'] [27..52])
@@ -17,7 +17,7 @@ let score = Seq.map (Seq.distinct >> Set.ofSeq)
 
 input   |> List.map (splitEq)
         |> Seq.ofList
-        |> Seq.map (fun (a, b) -> Set.intersect a b)
+        |> Seq.map Set.intersectMany
         |> score
         |> printfn "Part 1: %d"
 
