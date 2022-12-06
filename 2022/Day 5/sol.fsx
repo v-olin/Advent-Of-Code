@@ -46,9 +46,9 @@ let execInstr9001 (ss: (list<int * Stack<string>>)) (s: list<int>) =
         c2 <- c2 - 1
     ss
 
-let stacks s =  s |> Seq.takeWhile (fun x -> x <> "") 
-                                |> Seq.map extract |> Seq.concat |> Seq.rev |> Seq.toList
-                                |> List.fold addToStack []
+let stacks = Seq.takeWhile (fun x -> x <> "") 
+            >>Seq.map extract >> Seq.concat >> Seq.rev >> Seq.toList
+            >> List.fold addToStack []
 
 let instrs = input |> List.skipWhile (fun x -> x <> "") |> List.tail |> List.map shorten
 
