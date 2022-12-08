@@ -1,3 +1,5 @@
+let stopWatch = System.Diagnostics.Stopwatch.StartNew()
+
 let inline charToInt c = (int c - int '0')
 
 let zipper (a: List<'T>) (b: List<'T>) =
@@ -54,3 +56,7 @@ let parsed = List.map (Seq.toList >> List.map charToInt) input
 
 printfn $"Part 1: {checkPos parsed}"
 printfn $"Part 2: {findMaxView parsed}"
+
+stopWatch.Stop()
+printfn "Execution time: %.2f ms" stopWatch.Elapsed.TotalMilliseconds
+// Execution time: 4988.68 ms
