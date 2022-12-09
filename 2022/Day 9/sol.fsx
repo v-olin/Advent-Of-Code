@@ -5,27 +5,26 @@ type State =
 
 let getState (n: int) = State(List.replicate n (0, 0))
 
-let inline signum (a: int) =
+let signum (a: int) =
     if a < 0 then -1
     elif a = 0 then 0
     else 1
 
-let inline dist (ax, ay) (bx, by) =
+let dist (ax, ay) (bx, by) =
     sqrt (float (ax - bx) ** 2.0 + float (ay - by) ** 2.0)
 
-let extend (s: string) =
-    let s' = s.Split ' '
-    List.replicate (int s'.[1]) s'.[0]
-
-let inline dirTup (d: string) =
+let dirTup (d: string) =
     match d with
     | "R" -> (1, 0)
     | "U" -> (0, 1)
     | "L" -> (-1, 0)
     | _ ->  (0, -1)
 
-let moveHead (st: State) (d: string) =
-    let (dx, dy) = dirTup d
+let extend (s: string) =
+    let s' = s.Split ' '
+    List.replicate (int s'.[1]) (dirTup s'.[0])
+
+let moveHead (st: State) (dx, dy) =
     let mutable (hx, hy) = st.Knots.Head
     hx <- hx + dx
     hy <- hy + dy
@@ -43,8 +42,8 @@ let moveTail (st: State) (i: int) =
             st.Visited <- Set.add (tx + dx, ty + dy) st.Visited
         st
 
-let move (st: State) (d: string) =
-    let st' = moveHead st d
+let move (st: State) dp =
+    let st' = moveHead st dp
     List.fold (fun x y -> moveTail x y) st' [1..st'.Knots.Length-1]
 
 let input = System.IO.File.ReadAllLines "input.txt" |> Array.toList |> List.map extend |> List.concat
