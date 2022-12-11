@@ -25,6 +25,8 @@ like this:
 > csi <file>.csx
 ```
 
+**Language rating:**
+
 ## 2015
 Coming up on AOC of 2022, I'm warming up with some older events.
 Starting with 2015. This year is written in Java and the
@@ -32,3 +34,7 @@ solutions are self-contained. Just run them like this:
 ```
 > java <file>.java
 ```
+
+**Language rating:** Object-oriented languages will always feel like home to me, but I'll never
+be as comfortable with it as C#. As I've used it quite frequently at Chalmers, I have some
+knowledge with it and development comes smoothly. I'll give it a solid 7/10
