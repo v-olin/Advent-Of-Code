@@ -29,8 +29,8 @@ let parseMonkey (ls: string list) =
     else
         operation <- fun x -> operator x x
     let t = Seq.toList ls.[3] |> List.skip 21 |> Array.ofList |> System.String.Concat
-    let tIndex: int = (int ls.[4].[29] - (int '0'))
-    let fIndex: int = (int ls.[5].[30] - int '0')
+    let tIndex: int = int ls.[4].[29] - int '0'
+    let fIndex: int = int ls.[5].[30] - int '0'
     let test = fun (x: int64) -> if x % (int64 t) = 0 then tIndex else fIndex
     Monkey(index, items, operation, test)
 
@@ -59,8 +59,7 @@ let monkeyMap = List.map parseMonkey >> List.map (fun x -> x.Index, x) >> Map.of
 let solve (input: string list list) (part: int) (n: int) =
         let mMap = monkeyMap input
         let mCount = mMap.Count
-        let mMap' =
-            List.fold (fun st i -> turn st (i%mCount) part) mMap [0..(mCount*n)-1]
+        let mMap' = List.fold (fun st i -> turn st (i%mCount) part) mMap [0..(mCount*n)-1]
         mMap'.Keys |> Seq.map (fun k -> mMap'.[k].Inspected) |> Seq.sortDescending
                    |> Seq.take 2 |> Seq.map (int64) |> Seq.fold (*) (1: int64)
 
