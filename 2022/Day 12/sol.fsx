@@ -16,10 +16,10 @@ let closeChar (a: Element) (b: Element) =
 let nbs (elems: Element list list) (e: Element) =
     let offs = [(-1, 0); (1, 0); (0, -1); (0, 1)]
     let (x, y) = (e.X, e.Y)
-    let xys = List.map (fun (a, b) -> (x + a, y + b)) offs
-            |> List.filter (fun (a, b) -> a >= 0 && b >= 0 && a < elems.[0].Length && b < elems.Length)
-    let nElems = List.map (fun (x, y) -> elems.[y].[x] ) xys
-    List.filter  (fun (x: Element) -> closeChar e x ) nElems
+    List.map (fun (a, b) -> (x + a, y + b)) offs
+    |> List.filter (fun (a, b) -> a >= 0 && b >= 0 && a < elems.[0].Length && b < elems.Length)
+    |> List.map (fun (x, y) -> elems.[y].[x])
+    |> List.filter  (fun (x: Element) -> closeChar e x )
 
 let bfs input start =
     let q = Queue<Element>()
