@@ -1,0 +1,29 @@
+% del A
+s=tf('s') % Görs bar en gång för att skapa laplacevariabeln s.
+%Kp=0.1
+%Ki=-21.9569
+%Kp=0.2
+%Ki=-20.617
+Kp=0.4 % Sätt förstärkningen Kp = 0.1.
+Ki=-17.9828 % Sätt förstärkningen Ki = _.
+G=(1-0.5*s)/s/(1+0.5*s) % Generera processmodellen G(s).
+F=Ki/s+Kp % Generera regulatorn F(s).
+L=G*F % Generera kretsöverföringen L(s).
+Gry=feedback(L,1) % Generera överföringsfunktionen Gry(s).
+help feedback % Ger mer information om kommandot feedback.
+Gvy=feedback(G,F) % Generera överföringsfunktionen Gvy(s).
+Gwu=feedback(F,G) % Generera överföringsfunktionen Gwu(s).
+Gru=Gwu % Generera överföringsfunktionen Gru(s).
+bode(L) % Plotta bodediagrammet för L(s).
+nyquist(L) % Plotta nyquistdiagrammet för L(s).
+axis([-1.5 1.5 -1.5 1.5]) % Lämpliga axlar för nyquistdiagrammet.
+[Am,phim,wpi,wc]=margin(L) % Beräkna stabilitetsmarginaler givet L(s).
+% del B
+sigma(Gry) % Plotta frekvensfunktionen Gry(jω).
+step(Gry) % Plotta stegsvaret från r till y.
+% del C
+sigma(Gvy); grid on % Plotta frekvensfunktionen Gvy(jω).
+step(Gvy) % Plotta stegsvaret från vill y.
+% del D
+sigma(Gwu) % Plotta frekvensfunktionen |Gwu(jω)|.
+step(Gru) % Plotta stegsvaret från r till u
