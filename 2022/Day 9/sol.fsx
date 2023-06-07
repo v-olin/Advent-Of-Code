@@ -26,9 +26,7 @@ let extend (s: string) =
 
 let moveHead (st: State) (dx, dy) =
     let mutable (hx, hy) = st.Knots.Head
-    hx <- hx + dx
-    hy <- hy + dy
-    st.Knots <- List.updateAt 0 (hx, hy) st.Knots
+    st.Knots <- List.updateAt 0 (hx + dx, hy + dy) st.Knots
     st
 
 let moveTail (st: State) (i: int) =

@@ -2,68 +2,132 @@ open System
 open System.Text.RegularExpressions
 
 type Either<'a, 'b> =
-    | Left of 'a
-    | Right of 'b
+    | Number of n: 'a
+    | List of ns: 'b
 
-let isLeft = function
-  | Left _ -> true
-  | _      -> false
-
-let isRight = function
-  | Right _ -> true
-  | _      -> false
-
-// type Packet = 
+[<CustomEquality; NoComparison>]
 type Packet =
-    val mutable Integers: int list
-    val mutable Nested: Packet list
-    new (i, p) = { Integers = i; Nested = p }
+    { v : Either<int, Packet list> }
+    override this.ToString() =
+        match this.v with
+        | Number n -> $"Number {n}"
+        | List ns ->
+            let inner = String.concat "; " [for n in ns -> n.ToString()]
+            String.concat "" (["["] @ [inner] @ ["]"])
+    
+    interface IEquatable<Packet> with
+        member this.Equals other =
+            match this.v, other.v with
+            | Number x, Number y -> x = y
+            | Number x, List ys ->
+                { v = List [({v = Number x})] }.Equals { Packet.v = List ys}
+            | List xs, Number y ->
+                { v = List xs }.Equals { v = List [({v = Number y})] }
+            | List xs, List ys ->
+                match xs, ys with
+                | [], [] -> true
+                | [], _ -> false
+                | _, [] -> false
+                | x::xs', y::ys' ->
+                    if x.Equals y then { v = List xs' }.Equals { v = List ys' }
+                    else false
 
-type Pair = 
-    val Left: Packet
-    val Right: Packet
-    new (l, r) = { Left = l; Right = r }
+    override this.Equals other =
+        match other with
+        | :? Packet as p -> (this :> IEquatable<_>).Equals p
+        | _ -> false
 
-let obRx = Regex(@"\[", RegexOptions.Compiled)
-let cbRx = Regex(@"\]", RegexOptions.Compiled)
+    override this.GetHashCode () =
+        this.v.GetHashCode()
 
-let parseList (s: string) =
-    let rx = Regex(@"[0-9]+", RegexOptions.Compiled)
-    let is = seq { for x in rx.Matches s do (int x.Value) } |> Seq.toList
-    Packet(is, [])
+let cutoff (s: string) : int =
+    let mutable opens = 0
+    let mutable closing = false
+    let mutable i = 0
+    while (opens <> 0 || not closing) do
+        match s.[i] with
+        | '[' -> opens <- opens + 1; i <- i + 1
+        | ']' -> opens <- opens - 1; i <- i + 1; closing <- true
+        | _   -> i <- i + 1
+    i
 
-let rec parsePacket (s: string) =
-    printfn "Parsing: %s" s
-    let c = Choice
-    let opens = obRx.Matches s
-    let closed = cbRx.Matches s
-    if opens.Count = 0 then
-        Left ()
-    elif opens.Count = 1 then
-        Right (parseList s)
-    else
-        let opening = opens.[1].Index
-        let closing = closed.[closed.Count-2].Index
-        let nested = s.[opening..closing].Split(',') |> Array.toList |> List.map (parsePacket)
-        // printfn "Matches: %A" [for o in opens -> o.Index]
-        // printfn "Matches: %A" [for c in closed -> c.Index]
-        // let opening = opens.[1].Index
-        // let closing = closed.[closed.Count-2].Index
-        // printfn "O/C: %d %d" opening closing
-        // printfn "Nested: %s" s.[opening..closing]
-        // let nested = s.[opening..closing].Split(',')
-        //                 |> Array.toList
-        //                 |> List.map (parsePacket)
-        // let is = s.[1..opening-1] + s.[closing+1..s.Length-2]
-        // let is' = is.Split(',', StringSplitOptions.RemoveEmptyEntries)
-        // let ints = is' |> Array.map (int) |> Array.toList
-        Packet(ints, nested)
+let rec parse (s: string) : Packet =
+    let irx = Regex(@"[0-9]+", RegexOptions.Compiled)
+    let mutable str = s.Substring 1
+    let mutable p: Packet list = []
+    while str <> "" do
+        match str.[0] with
+        | '[' ->
+            let last = cutoff str
+            let inner = parse str.[0..last]
+            p <- p @ [inner]
+            str <- str.[last+1..]
+        | ']' -> str <- ""
+        | ',' -> str <- str.Substring 1
+        | _   ->
+            if Char.IsDigit str.[0] then
+                let n = irx.Match(str).Value |> int
+                str <- str.Substring <| n.ToString().Length
+                p <- p @ [{ v = Number n}] // [Packet(n)]
+            else failwith "unknown char"
+    { v = List p } //Packet p
 
-let parsePair (s: string list) =
-    let left = parsePacket s.[0]
-    let right = parsePacket s.[1]
-    Pair(left, right)
+type CompareResult =
+    | InOrder = -1
+    | Continue = 0
+    | OutOfOrder = 1
 
-let input = System.IO.File.ReadAllLines "input.txt" |> Array.toList
+let rec compare (l: Packet, r: Packet) : CompareResult =
+    match l.v, r.v with
+    | Number x, Number y ->
+        if x < y then CompareResult.InOrder
+        elif x = y then CompareResult.Continue
+        else CompareResult.OutOfOrder
+    | Number x, List ys ->
+        compare ({v = List [({ v = Number x })]}, {v=List ys})
+    | List xs, Number y ->
+        compare ({v = List xs}, {v = List [({ v = Number y})]})
+    | List xs, List ys ->
+        compareLists (xs, ys)
 
-parsePacket "[[1],[2,3,4]]"
+and compareLists (l: Packet list, r: Packet list) =
+    match l, r with
+    | [], [] -> CompareResult.Continue
+    | [], _ -> CompareResult.InOrder
+    | _, [] -> CompareResult.OutOfOrder
+    | x::xs, y::ys ->
+        let res = compare (x, y)
+        match res with
+        | CompareResult.Continue -> compareLists (xs, ys)
+        | _ -> res
+
+let rec chunk (s: 'T list) =
+    let pair = s |> List.take 2 |> fun l -> (l.[0], l.[1])
+    let rest = s |> List.skip 2
+    [pair] @ (if rest.Length > 0 then chunk rest else [])
+
+let input = System.IO.File.ReadAllLines "input.txt"
+            |> Array.toList
+            |> List.filter (fun s -> s <> "")
+            |> List.map parse
+
+let part1 = input |> chunk |> List.map compare
+            |> fun l -> List.zip l [1..l.Length]
+            |> fun l ->
+                List.filter (fun (r, _) -> r = CompareResult.InOrder) l
+            |> List.map snd |> List.sum
+
+let packetComparer (l: Packet) (r: Packet) : int = int <| compare (l, r)
+
+let keys = [for s in ["[[2]]"; "[[6]]"] -> parse s]
+let input2 = input @ keys
+            |> List.sortWith packetComparer
+
+let part2 = keys
+            |> List.map (fun k ->
+                List.findIndex (fun e -> e.Equals k) input2)
+            |> List.map (fun i -> i + 1)
+            |> List.fold (*) 1
+
+printfn "Part 1: %d" part1
+printfn "Part 2: %d" part2
