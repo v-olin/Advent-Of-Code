@@ -2,3 +2,9 @@
 2021/*/*.o
 2021/cabal/*
 2021/aoc21/*
+
+2023/*/*.exe
+2023/Day 1/out.txt
+2023/Day 1/riya.txt
+
+.vscode

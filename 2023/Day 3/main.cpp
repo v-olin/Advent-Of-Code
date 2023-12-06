@@ -144,7 +144,6 @@ int part2(schema& schema) {
 
 int main() {
     ifstream in(INPUT);
-    vector<string> lines;
     schema schema;
     string s;
 
