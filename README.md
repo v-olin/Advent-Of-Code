@@ -2,6 +2,13 @@
 
 Monorepo for all my years of [Advent of Code](https://adventofcode.com/).
 
+## 2023
+Maybe not the best idea, but C++ it is.
+```
+> g++ -std=c++2a main.cpp -o main
+> .\main.exe input.txt
+```
+
 ## 2022
 New year, new language. This year is written in F#.
 ```

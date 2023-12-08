@@ -46,7 +46,6 @@ int part1(map m) {
     int curr = toId("AAA"), goal = toId("ZZZ");
     int steps = 0, instr = 0;
 
-
     while (curr != goal) {
         char c = m.dirs[instr++ % m.dirs.size()];
         curr = (c == 'L') ? m.nodes[curr].l : m.nodes[curr].r;
