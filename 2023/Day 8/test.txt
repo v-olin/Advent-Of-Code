@@ -1,0 +1,6 @@
+LLR
+
+AAA = (BBB, BBB)
+BBA = (BBA, ZZZ)
+BBB = (AAA, ZZZ)
+ZZZ = (ZZZ, ZZZ)
