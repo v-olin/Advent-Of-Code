@@ -5,6 +5,7 @@
 #include <regex>
 #include <stdint.h>
 #include <omp.h>
+#include <queue>
 
 #define IS_DIGIT(c) (c >= '0' && c <= '9')
 
@@ -26,6 +27,10 @@ struct range {
     uint64_t dst = 0;
     uint64_t src = 0;
     uint64_t len = 0;
+
+    range() {}
+
+    range(uint64_t dst, uint64_t src, uint64_t len) : dst(dst), src(src), len(len) {}
 
     range(string s) {
         size_t pos = 0;
@@ -93,6 +98,34 @@ uint64_t part1(vector<uint64_t>& seeds, vector<vector<range>>& maps) {
     return min;
 }
 
+uint64_t part2(vector<uint64_t>& seeds, vector<vector<range>>& maps) {
+    queue<range> toTranslate, tmp;
+
+    for (auto& r : maps[0]) {
+        toTranslate.push(r);
+    }
+
+    for (size_t i = 1; i < maps.size(); i++) {
+        while (!toTranslate.empty()) {
+            range r = toTranslate.front();
+            toTranslate.pop();
+            for (auto& next : maps[i]) {
+                if (r.dst >= next.src && r.dst <= next.src + next.len) {
+                    if (r.dst + (r.src - next.src) < next.dst + next.len) {
+                        tmp.push(range(r.dst + (r.src - next.src), next.dst, next.len));
+                    }
+                    else {
+                        tmp.push(range(next.dst + next.len, r.dst + (r.src - next.src) - (next.dst + next.len), r.len - (r.dst + (r.src - next.src) - (next.dst + next.len))));
+                    }
+                }
+            }
+        }
+        toTranslate.swap(tmp);
+    }
+
+    return 0;
+}
+
 int main(int argc, char** argv) {
 
     if (argc != 2) {
@@ -108,6 +141,7 @@ int main(int argc, char** argv) {
 
     getline(input, s);
     parseSeeds(seeds, s);
+    cout << "seeds: " << seeds.size() << endl;
 
     while (getline(input, s)) {
         if (!s.empty())
@@ -117,6 +151,13 @@ int main(int argc, char** argv) {
     input.close();
 
     parseRanges(maps, lines);
+    int numRanges = 0;
+
+    for (auto& m : maps) {
+        numRanges += m.size();
+    }
+
+    cout << "ranges: " << numRanges << endl; // 1000
 
     cout << "Part 1: " << part1(seeds, maps) << endl;
 
