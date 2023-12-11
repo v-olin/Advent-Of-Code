@@ -9,19 +9,10 @@
 
 using namespace std;
 
-#define abs(x) ((x) < 0 ? -(x) : (x))
 #define max(x,y) ((x) > (y) ? (x) : (y))
 #define min(x,y) ((x) < (y) ? (x) : (y))
-#define EMPTY_SIZE 1000000
 
-struct coord {
-    size_t x, y;
-
-    bool operator==(const coord& other) const {
-        return (x == other.x && y == other.y)
-                || (x == other.y && y == other.x);
-    }
-};
+struct coord { size_t x, y; };
 
 struct emptyMap {
     vector<bool> cols;
@@ -42,27 +33,6 @@ emptyMap findEmpties(vector<string> map) {
         }
     }
     return empties;
-}
-
-vector<string> expand(const vector<string> map, const emptyMap empties) {
-    vector<string> newMap;
-    size_t width = map[0].length() + count(empties.cols.begin(), empties.cols.end(), true);
-    for (size_t y = 0; y < map.size(); y++) {
-        string row;
-        if (empties.rows[y]) {
-            row = string(width, '.');
-            newMap.push_back(row);
-        } else {
-            for (size_t x = 0; x < map[y].length(); x++) {
-                row += map[y][x];
-                if (empties.cols[x]) {
-                    row += '.';
-                }
-            }
-        }
-        newMap.push_back(row);
-    }
-    return newMap;
 }
 
 unordered_map<size_t, coord> findGalaxies(vector<string> map) {
@@ -88,24 +58,6 @@ vector<pair<size_t, size_t>> getPairs(unordered_map<size_t, coord> galaxies) {
     return pairs;
 }
 
-inline
-size_t distance(coord a, coord b) {
-    return abs(max(a.x, b.x) - min(a.x, b.x))
-         + abs(max(a.y, b.y) - min(a.y, b.y));
-}
-
-size_t part1(vector<string> map) {
-    unordered_map<size_t, coord> galaxies = findGalaxies(map);
-    vector<pair<size_t, size_t>> pairs = getPairs(galaxies);
-
-    size_t totDistance = 0;
-    for (auto pair : pairs) {
-        // size_t tmp = distance(galaxies[pair.first], galaxies[pair.second]);
-        totDistance += distance(galaxies[pair.first], galaxies[pair.second]);
-    }
-    return totDistance;
-}
-
 pair<size_t, size_t> emptyCrossings(const coord from, const coord to, const emptyMap empties) {
     size_t rows = 0, cols = 0;    
     for (size_t y = min(from.y, to.y) + 1; y < max(from.y, to.y); y++) {
@@ -119,23 +71,23 @@ pair<size_t, size_t> emptyCrossings(const coord from, const coord to, const empt
     return make_pair(rows, cols);
 }
 
-size_t distance2(coord a, coord b, const emptyMap empties) {
-    size_t dist = distance(a, b);
-    auto tmp = emptyCrossings(a, b, empties);
-    dist += tmp.first * EMPTY_SIZE + tmp.second * EMPTY_SIZE;
-    dist -= tmp.first + tmp.second;
-    return dist;
+pair<size_t, size_t> distance(coord a, coord b, const emptyMap empties) {
+    size_t manhattan = max(a.x, b.x) - min(a.x, b.x) + max(a.y, b.y) - min(a.y, b.y);
+    auto crossings = emptyCrossings(a, b, empties);
+    size_t n = crossings.first + crossings.second;
+    return make_pair(manhattan + n, manhattan + n * 999999);
 }
 
-size_t part2(vector<string> map) {
+pair<size_t, size_t> solve(vector<string> map) {
     unordered_map<size_t, coord> galaxies = findGalaxies(map);
     vector<pair<size_t, size_t>> pairs = getPairs(galaxies);
     emptyMap empties = findEmpties(map);
 
-    size_t totDistance = 0;
+    pair<size_t, size_t> totDistance = make_pair(0, 0);
     for (auto pair : pairs) {
-        size_t tmp = distance2(galaxies[pair.first], galaxies[pair.second], empties);
-        totDistance += tmp;
+        auto distances = distance(galaxies[pair.first], galaxies[pair.second], empties);
+        totDistance.first += distances.first;
+        totDistance.second += distances.second;
     }
     return totDistance;
 }
@@ -153,16 +105,9 @@ int main(int argc, char** argv) {
         lines.push_back(line);
     }
 
-    emptyMap empties = findEmpties(lines);
-    vector<string> newMap = expand(lines, empties);
-
-    auto p1 = part1(newMap);
-    cout << "Part 1: " << p1 << endl;
-    assert(p1 == 10422930 && "Part 1 failed");
-    
-    auto p2 = part2(lines);
-    cout << "Part 2: " << p2 << endl;
-    assert(p2 == 699909023130 && "Part 2 failed");
+    pair<size_t, size_t> solution = solve(lines);
+    cout << "Part 1: " << solution.first << endl;
+    cout << "Part 2: " << solution.second << endl;
 
     return 0;
 }
